@@ -69,7 +69,6 @@ contract Client {
     Bank bank; // the bank that this client contract connected with
 
     constructor (address _referBank, address _owner) public payable {
-        require(msg.value == 30 ether, "Initial funding of 30 ether required for rewards");
         owner = _owner;
         bank = Bank(_referBank);
         bank.enroll(address(this));
@@ -79,25 +78,29 @@ contract Client {
         return bank.isClientActive(address(this));
     }
 
-    function addDeposit() public payable {
-        
-        address(bank).transfer(msg.value);
+    function addFund() public payable {
+        require(msg.sender == owner, "only owner are allow to send money to client contract");
+    }
+
+    function addDeposit(uint amount) public {
+        // addresss(bank).transfer(amount)
+        bank.addDeposit.value(amount)();
     }
 
     function withdraw(uint amount) public payable{
         bank.withdraw(amount);
     }
 
-    function checkDeposit() public view returns (uint) {
+    function checkDeposit() public view returns(uint) {
         return bank.checkDeposit(address(this));
     }
 
-    function checkBalance() public view returns (uint) {
+    function checkBalance() public view returns(uint) {
         return address(this).balance;
     }
 
     // transfer the balance from the client's contract to the owner account
     function () public payable {
-        // owner.transfer(this.balance);
+        require(msg.sender == owner, "only owner are allow to send money to client contract");
     }
 }
