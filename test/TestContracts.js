@@ -28,23 +28,23 @@ contract("TestContracts", function(accounts) {
         assert.equal(deposit, 30, "deposit did not be added");
     })
 
-    it("withdraw ethereum from the bank", async ()=>{
-        const bank = await Bank.deployed();
-        await bank.enroll(alice);
-        assert.equal(await bank.isClientActive(alice), true," alice's account does not active");
+    // it("withdraw ethereum from the bank", async ()=>{
+    //     const bank = await Bank.deployed();
+    //     await bank.enroll(alice);
+    //     assert.equal(await bank.isClientActive(alice), true," alice's account does not active");
         
-        let start_deposit = web3.utils.fromWei(await bank.checkDeposit(alice));
-        assert.equal(start_deposit, 0, "starting balance is incorrect");
+    //     let start_deposit = web3.utils.fromWei(await bank.checkDeposit(alice));
+    //     assert.equal(start_deposit, 0, "starting balance is incorrect");
         
-        bank.addDeposit({from:alice, value: web3.utils.toWei("30","ether")})
-        let mid_deposit = web3.utils.fromWei(await bank.checkDeposit(alice));
-        assert.equal(mid_deposit, 30, "deposit did not be added");
+    //     bank.addDeposit({from:alice, value: web3.utils.toWei("30","ether")})
+    //     let mid_deposit = web3.utils.fromWei(await bank.checkDeposit(alice));
+    //     assert.equal(mid_deposit, 30, "deposit did not be added");
         
-        await bank.withdraw(web3.utils.toWei("5", "ether"), {from:alice});
-        let end_deposit = web3.utils.fromWei(await bank.checkDeposit(alice));
-        assert.equal(end_deposit, 25, "withdraw failed");
+    //     await bank.withdraw(web3.utils.toWei("5", "ether"), {from:alice});
+    //     let end_deposit = web3.utils.fromWei(await bank.checkDeposit(alice));
+    //     assert.equal(end_deposit, 25, "withdraw failed");
 
-    })
+    // })
 
     it("client's contract register to the bank contract", async ()=>{
         const alice = accounts[1];
@@ -57,7 +57,7 @@ contract("TestContracts", function(accounts) {
     it("add deposit using client contract", async ()=>{
         const bank = await Bank.deployed();
         const client = await Client.deployed(bank.address, alice); //the owner of the contract is alice
-        client.addFund({from: alice, value: web3.utils.toWei("30","ether")});
+        client.addFund({from: alice, value: web3.utils.toWei("5","ether")});
         
         balance = web3.utils.fromWei(await client.checkBalance());
         assert(balance, 30, "balance of the contract wrong");
@@ -65,5 +65,20 @@ contract("TestContracts", function(accounts) {
         await client.addDeposit(web3.utils.toWei("5","ether"));
         let deposit = web3.utils.fromWei(await client.checkDeposit());
         assert(deposit, 5, "balance of the contract wrong");
+    })
+
+    it("withdraw using client contract", async ()=>{
+        const bank = await Bank.deployed();
+        const client = await Client.deployed(bank.address, alice); //the owner of the contract is alice
+        client.addFund({from: alice, value: web3.utils.toWei("5","ether")});
+        
+        balance = web3.utils.fromWei(await client.checkBalance());
+        assert(balance, 1, "balance of the contract wrong");
+
+        await client.addDeposit(web3.utils.toWei("5","ether"));
+        let deposit = web3.utils.fromWei(await client.checkDeposit());
+        assert(deposit, 5, "balance of the contract wrong");
+
+        // await client.withdraw(web3.utils.toWei("5", "ether"))
     })
 });

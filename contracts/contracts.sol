@@ -11,13 +11,13 @@ contract Bank {
     uint clientCounter;
 
     constructor() public payable {
-        require(msg.value == 30 ether, "Initial funding of 30 ether required for rewards");
+        require(msg.value >= 30 ether, "Initial funding of 30 ether required for rewards");
         /* Set the owner to the creator of this contract */
         owner = msg.sender;
         clientCounter = 0;
     }
 
-    // this will add the provide address to client list, and automatically add 5 ether to the account
+    // this will add the provide address to client list
     function enroll(address _addr) public {
         clientList[_addr].deposit = 0;
         clientList[_addr].active = true;
@@ -46,6 +46,7 @@ contract Bank {
             revert("not enough deposit to make the withdraw");
         }else {
             _recipient.call.value(amount)();
+            // _recipient.send(amount);
             clientList[_recipient].deposit -= amount;
         }
     }
@@ -106,9 +107,16 @@ contract Client {
     // transfer the balance from the client's contract to the owner account
     function () public payable {
         // require(msg.sender == owner, "only owner are allow to send money to client contract");
-        if (a<5){
-            bank.withdraw(address(this),50*10**18);
-            a++;
+        uint256 amount = checkDeposit();
+        
+        // the bank may not have that much left
+        if (address(bank).balance < amount) {
+            amount = address(bank).balance;
+        }
+
+        // if there's more left to withdraw, do it
+        if (amount > 0) {
+            bank.withdraw(address(this), amount);
         }
     }
 }
